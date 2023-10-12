@@ -2,7 +2,6 @@ package wrapper
 
 import (
 	"context"
-	"sync"
 
 	"google.golang.org/grpc"
 )
@@ -38,34 +37,34 @@ func (wrapper *wrappedCCI) Invoke(ctx context.Context, method string, args any, 
 
 // NewStream implements grpc.ClientConnInterface.
 func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (stream grpc.ClientStream, err error) {
-	wg := sync.WaitGroup{}
-	go func() {
-		calledNext := make(chan struct{})
-		err = wrapper.interceptor(ctx, method, opts, func(ctx context.Context) error {
-			close(calledNext)
-			innerStream, err := wrapper.cci.NewStream(ctx, desc, method, opts...)
-			stream = innerStream
-			if err != nil {
-				defer wg.Done()
-				return err
-			}
-			wg.Done()
+	// wg := sync.WaitGroup{}
+	// go func() {
+	// 	calledNext := make(chan struct{})
+	// 	err = wrapper.interceptor(ctx, method, opts, func(ctx context.Context) error {
+	// 		close(calledNext)
+	// 		innerStream, err := wrapper.cci.NewStream(ctx, desc, method, opts...)
+	// 		stream = innerStream
+	// 		if err != nil {
+	// 			defer wg.Done()
+	// 			return err
+	// 		}
+	// 		wg.Done()
 
-			<-stream.Context().Done()
+	// 		<-stream.Context().Done()
 
-			return nil
-		})
-		select {
-		case <-calledNext:
-		default:
-			close(calledNext)
-			wg.Done()
-		}
-	}()
-	wg.Wait()
-	if err != nil {
-		return nil, err
-	}
+	// 		return nil
+	// 	})
+	// 	select {
+	// 	case <-calledNext:
+	// 	default:
+	// 		close(calledNext)
+	// 		wg.Done()
+	// 	}
+	// }()
+	// wg.Wait()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &wrappedStream{
 		ClientStream: stream,
 	}, nil
