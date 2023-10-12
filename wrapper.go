@@ -2,7 +2,6 @@ package wrapper
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"google.golang.org/grpc"
@@ -47,7 +46,6 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 			close(calledNext)
 			innerStream, err := wrapper.cci.NewStream(ctx, desc, method, opts...)
 			stream = innerStream
-			fmt.Printf("Stream: %v\n", stream)
 			if err != nil {
 				defer wg.Done()
 				return err
@@ -69,7 +67,6 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Stream: %v\n", stream)
 	return &wrappedStream{
 		ClientStream: stream,
 	}, nil
