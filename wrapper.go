@@ -25,7 +25,6 @@ type wrappedCCI struct {
 
 type wrappedStream struct {
 	grpc.ClientStream
-	cci wrappedCCI
 }
 
 var _ grpc.ClientConnInterface = (*wrappedCCI)(nil)
@@ -45,9 +44,7 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 		err = wrapper.interceptor(ctx, method, opts, func(ctx context.Context) error {
 			close(calledNext)
 			innerStream, err := wrapper.cci.NewStream(ctx, desc, method, opts...)
-			stream = &wrappedStream{
-				ClientStream: innerStream,
-			}
+			stream = innerStream
 			if err != nil {
 				defer wg.Done()
 				return err
@@ -69,6 +66,7 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 	if err != nil {
 		return nil, err
 	}
-
-	return
+	return &wrappedStream{
+		ClientStream: stream,
+	}, nil
 }
