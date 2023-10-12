@@ -45,7 +45,9 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 		err = wrapper.interceptor(ctx, method, opts, func(ctx context.Context) error {
 			close(calledNext)
 			innerStream, err := wrapper.cci.NewStream(ctx, desc, method, opts...)
-			stream = innerStream
+			stream = &wrappedStream{
+				ClientStream: innerStream,
+			}
 			if err != nil {
 				defer wg.Done()
 				return err
@@ -67,7 +69,6 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 	if err != nil {
 		return nil, err
 	}
-	return &wrappedStream{
-		ClientStream: stream,
-	}, nil
+
+	return
 }
