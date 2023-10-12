@@ -68,6 +68,7 @@ func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc,
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Stream: %v\n", stream)
 	return &wrappedStream{
 		ClientStream: stream,
 	}, nil
