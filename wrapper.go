@@ -39,7 +39,8 @@ func (wrapper *wrappedCCI) Invoke(ctx context.Context, method string, args any, 
 
 // NewStream implements grpc.ClientConnInterface.
 func (wrapper *wrappedCCI) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (stream grpc.ClientStream, err error) {
-	wg := sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
 		calledNext := make(chan struct{})
 		err = wrapper.interceptor(ctx, method, opts, func(ctx context.Context) error {
